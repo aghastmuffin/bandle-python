@@ -1,0 +1,15 @@
+[project]
+name = "bandle"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "demucs>=4.0.1",
+    "ffmpeg-python>=0.2.0",
+    "librosa>=0.11.0",
+    "pygame-ce>=2.5.7",
+    "torch>=2.13.0",
+    "pyqt6>=6.7.0",
+    "soundfile>=0.12.1",
+    "sounddevice>=0.5.1",
+    "yt-dlp>=2026.7.4",
+]

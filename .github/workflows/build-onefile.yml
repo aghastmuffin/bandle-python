@@ -72,7 +72,7 @@ jobs:
         shell: bash
         run: |
           curl -L -o uv.zip https://github.com/astral-sh/uv/releases/latest/download/uv-x86_64-pc-windows-msvc.zip
-          tar -xf uv.zip
+          python -c "import zipfile; zipfile.ZipFile('uv.zip').extractall('.')"
           mv uv-x86_64-pc-windows-msvc/uv.exe .
 
       - name: Build onefile launcher

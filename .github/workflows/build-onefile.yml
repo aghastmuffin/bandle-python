@@ -1,22 +1,14 @@
 name: Build onefile executables
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/build-onefile.yml'
-      - 'launcher.py'
-      - 'runtime_env.py'
-      - 'downloader.py'
-      - 'runtime-requirements.txt'
-      - 'app.py'
 
 jobs:
   build:
     permissions:
-      contents: read
+      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -24,16 +16,19 @@ jobs:
           - os: ubuntu-latest
             artifact_name: bandle-linux
             binary_name: bandle
+            release_binary_name: bandle-linux
             data_sep: ':'
             ext: ''
           - os: macos-latest
             artifact_name: bandle-macos
             binary_name: bandle
+            release_binary_name: bandle-macos
             data_sep: ':'
             ext: ''
           - os: windows-latest
             artifact_name: bandle-windows
             binary_name: bandle.exe
+            release_binary_name: bandle-windows.exe
             data_sep: ';'
             ext: '.exe'
 
@@ -72,7 +67,7 @@ jobs:
         shell: bash
         run: |
           curl -L -o uv.zip https://github.com/astral-sh/uv/releases/latest/download/uv-x86_64-pc-windows-msvc.zip
-          tar -xf uv.zip
+          python -c "import zipfile; zipfile.ZipFile('uv.zip').extractall('.')"
           mv uv-x86_64-pc-windows-msvc/uv.exe .
 
       - name: Build onefile launcher
@@ -90,8 +85,18 @@ jobs:
           --add-data "uv${{ matrix.ext }}${{ matrix.data_sep }}."
           launcher.py
 
+      - name: Rename binary for release
+        run: |
+          python -c "import os; os.rename('dist/${{ matrix.binary_name }}', 'dist/${{ matrix.release_binary_name }}')"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: dist/${{ matrix.binary_name }}
+          path: dist/${{ matrix.release_binary_name }}
+
+      - name: Upload to Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/${{ matrix.release_binary_name }}
